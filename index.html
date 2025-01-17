@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Browser</title>
-  <link rel="manifest" href="manifest.json">
   <style>
     body {
       margin: 0;
@@ -42,45 +41,71 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    iframe {
+    #results {
       flex: 1;
-      border: none;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    .result {
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    .result a {
+      text-decoration: none;
+      color: #4285F4;
+      font-size: 18px;
     }
   </style>
 </head>
 <body>
   <header>Simple Browser</header>
   <div id="search-bar">
-    <input type="text" id="search-input" placeholder="Search or enter URL" />
-    <button id="search-button">Go</button>
+    <input type="text" id="search-input" placeholder="Search DuckDuckGo" />
+    <button id="search-button">Search</button>
   </div>
-  <iframe id="browser-frame" src="https://duckduckgo.com/"></iframe>
+  <div id="results"></div>
 
   <script>
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
-    const browserFrame = document.getElementById('browser-frame');
+    const resultsDiv = document.getElementById('results');
 
-    const navigate = () => {
-      const query = searchInput.value.trim();
-      if (!query) return;
-
-      if (query.startsWith('http://') || query.startsWith('https://')) {
-        // Wenn es eine gültige URL ist, lade sie im iFrame
-        browserFrame.src = query;
-      } else if (query.includes('.')) {
-        // Wenn es wie eine URL aussieht, aber kein http hat
-        browserFrame.src = `https://${query}`;
-      } else {
-        // Andernfalls leite es als Suchanfrage an DuckDuckGo weiter
-        browserFrame.src = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
+    const searchDuckDuckGo = async (query) => {
+      const apiUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`;
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        resultsDiv.innerHTML = '';
+        if (data.RelatedTopics.length > 0) {
+          data.RelatedTopics.forEach((topic) => {
+            if (topic.Text && topic.FirstURL) {
+              const result = document.createElement('div');
+              result.classList.add('result');
+              result.innerHTML = `<a href="${topic.FirstURL}" target="_blank">${topic.Text}</a>`;
+              resultsDiv.appendChild(result);
+            }
+          });
+        } else {
+          resultsDiv.innerHTML = '<p>No results found.</p>';
+        }
+      } catch (error) {
+        resultsDiv.innerHTML = '<p>Error loading results.</p>';
       }
     };
 
-    searchButton.addEventListener('click', navigate);
+    searchButton.addEventListener('click', () => {
+      const query = searchInput.value.trim();
+      if (query) searchDuckDuckGo(query);
+    });
 
     searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') navigate();
+      if (e.key === 'Enter') {
+        const query = searchInput.value.trim();
+        if (query) searchDuckDuckGo(query);
+      }
     });
   </script>
 </body>
