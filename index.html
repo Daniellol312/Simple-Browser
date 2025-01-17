@@ -54,7 +54,7 @@
     <input type="text" id="search-input" placeholder="Search or enter URL" />
     <button id="search-button">Go</button>
   </div>
-  <iframe id="browser-frame" src="https://suche.web.de"></iframe>
+  <iframe id="browser-frame" src="https://duckduckgo.com/"></iframe>
 
   <script>
     const searchInput = document.getElementById('search-input');
@@ -72,8 +72,8 @@
         // Wenn es wie eine URL aussieht, aber kein http hat
         browserFrame.src = `https://${query}`;
       } else {
-        // Andernfalls leite es als Suchanfrage an web.de weiter
-        browserFrame.src = `https://suche.web.de/?q=${encodeURIComponent(query)}`;
+        // Andernfalls leite es als Suchanfrage an DuckDuckGo weiter
+        browserFrame.src = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
       }
     };
 
